@@ -1,6 +1,11 @@
 
 public class Posn implements Comparable<Posn> {
 
+	public static Posn parsePosn(String input) {
+		String[] pieces = input.split("\\s+");
+		return new Posn(pieces[0], Integer.parseInt(pieces[1]), Integer.parseInt(pieces[2]));
+	}
+	
 	Posn(String name, int x, int y) {
 		this.x = x;
 		this.y = y;

@@ -1,3 +1,7 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -37,29 +41,10 @@ public class TSPSolver {
 		return totalDistance;
 	}
 	
-	public static void main(String[] args) {
-		final long startTime = System.nanoTime();
-		
-		Deque<Posn> travelled = new LinkedList<Posn>();
-		travelled.add(new Posn("A", 82, 27));
-		
-		List<Posn> untravelled = new ArrayList<Posn>();
-		untravelled.add(new Posn("B", 75, 11));
-		untravelled.add(new Posn("C", 27, 33));
-		untravelled.add(new Posn("D", 51, 53));
-		untravelled.add(new Posn("E",  5, 29));
-		untravelled.add(new Posn("F", 13,  8));
-		untravelled.add(new Posn("G", 59, 79));
-		untravelled.add(new Posn("H", 96, 26));
-		untravelled.add(new Posn("I", 16, 32));
-		untravelled.add(new Posn("J", 80, 91));
-		
-		TSPState start = new TSPState(0, 0, travelled, untravelled);
-		
+	public static TSPState findRoute(TSPState start) {
 		PriorityQueue<TSPState> pq = new PriorityQueue<TSPState>();
 		pq.add(start);
 		
-		TSPState goal;
 		while (true) {
 			
 			TSPState current = pq.remove();
@@ -67,8 +52,7 @@ public class TSPSolver {
 			if (current.getUntravelledCities().isEmpty()) {
 				if (current.getTravelledCities().getFirst().getName().compareTo( 
 						current.getTravelledCities().getLast().getName()) == 0) {
-					goal = current;
-					break;
+					return current;
 				} else {
 					Posn endCity = current.getTravelledCities().getFirst();
 					current.getUntravelledCities().add(endCity);
@@ -89,8 +73,30 @@ public class TSPSolver {
 				pq.add(new TSPState(newPriority, newDistance, nowTravelled, stillUntravelled));
 			}
 		}
+	}
+	
+	public static void main(String[] args) throws IOException {
 		
-		System.out.printf("A*: %d\n", System.nanoTime() - startTime);
+		FileReader fileReader = new FileReader("/Users/cushon/Documents/cs486-workspace/A*-TSP/problem/problem10-1");
+		BufferedReader bufferedReader = new BufferedReader(fileReader);
+		
+		int nodes = Integer.parseInt(bufferedReader.readLine());
+		
+		final long startTime = System.nanoTime();
+		
+		List<Posn> nodeList = new ArrayList<Posn>();
+		String inputLine = null;
+		while ((inputLine = bufferedReader.readLine()) != null) {
+			nodeList.add(Posn.parsePosn(inputLine));
+		}
+		assert(nodeList.size() == nodes);
+		
+		Deque<Posn> travelled = new LinkedList<Posn>(nodeList.subList(0, 1));
+		List<Posn> untravelled = new ArrayList<Posn>(nodeList.subList(1, nodeList.size()));
+		
+		TSPState goal = findRoute(new TSPState(0, 0, travelled, untravelled));
+		
+		System.out.printf("A* Runtime: %f\n", (System.nanoTime() - startTime) / 1000000000.0);
 		
 		System.out.printf("Goal %f\n", goal.getDistance());
 		
@@ -103,34 +109,5 @@ public class TSPSolver {
 			System.out.printf("%d ", city.getName().charAt(0) - 'A');
 		}
 		System.out.println();
-		
-		Posn[] all = new Posn[10];
-		all[0] = new Posn("A", 82, 27);
-		all[1] = new Posn("B", 75, 11);
-		all[2] = new Posn("C", 27, 33);
-		all[3] = new Posn("D", 51, 53);
-		all[4] = new Posn("E", 5,  29);
-		all[5] = new Posn("F", 13,  8);
-		all[6] = new Posn("G", 59, 79);
-		all[7] = new Posn("H", 96, 26);
-		all[8] = new Posn("I", 16, 32);
-		all[9] = new Posn("J", 80, 91);
-		
-		double alt = 0;
-		double alt2 = 0;
-		int[] path1 = {0, 7, 1, 5, 4, 8, 2, 3, 6, 9, 0};
-		int[] path2 = {0, 1, 5, 4, 8, 2, 3, 6, 9, 7, 0};
-		for (int i = 0; i < path1.length - 1; ++i) {
-			alt += all[path1[i]].distanceFrom(all[path1[i+1]]);
-			alt2 += all[path2[i]].distanceFrom(all[path2[i+1]]);
-		}
-		System.out.println(alt);
-		System.out.println(alt2);
-		
-		System.out.printf("%f\n", all[0].distanceFrom(all[7]));
-		System.out.printf("%f\n", all[7].distanceFrom(all[1]));
-		
-		System.out.printf("%f\n", all[0].distanceFrom(all[1]));
-		System.out.printf("%f\n", all[9].distanceFrom(all[7]));
 	}
 }
